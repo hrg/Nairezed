@@ -1,0 +1,37 @@
+h1 My Character
+// character(owner, name, attack, defense, health, exp, level)
+
+- if (myCharacter)
+	h2 #{myCharacter.name} (level #{myCharacter.level})
+	ul
+		li exp : #{myCharacter.exp}
+		li health : #{myCharacter.health}
+		li attack : #{myCharacter.attack}
+		li defense : #{myCharacter.defense}
+	input(id='enterBtn', type='button', value='Enter')
+	script
+		document.getElementById('enterBtn').addEventListener('click', function(){
+			location.href = '/main'; 
+		});
+- else
+	h2 No character
+	form(action='/newChar', method='POST')
+		label(for='name') name
+		input(type='text', id='name', name='name')
+		br
+		label(for='level') level
+		input(type='text', id='level', name='level', value=1)
+		br
+		label(for='exp') exp
+		input(type='text', id='exp', name='exp', value=0)
+		br
+		label(for='health') health
+		input(type='text', id='health', name='health')
+		br
+		label(for='attack') attack
+		input(type='text', id='attack', name='attack')
+		br
+		label(for='defense') defense
+		input(type='text', id='defense', name='defense')
+		br
+		input(type='submit', value='Create')
