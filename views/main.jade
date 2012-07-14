@@ -3,7 +3,8 @@
 	div(id='hero')
 	h2 #{hero.name} (level #{hero.level})
 	ul
-		li exp : #{hero.exp}
+		li exp : 
+			span(id='exp') #{hero.exp}
 		li health : #{hero.health}
 		li attack : #{hero.attack}
 		li defense : #{hero.defense}
@@ -21,6 +22,7 @@
 			health.innerHTML = health.innerHTML - 10;
 			if( health.innerHTML <= 0 ) {
 				jx.id('enemies').removeChild(this.parentNode);
+				jx.id('exp').innerHTML = Number(jx.id('exp').innerHTML) + 10;
 			}
 		}
 		jx.on('attackBtn', 'click', onclick_attack);
