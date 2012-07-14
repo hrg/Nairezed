@@ -35,35 +35,4 @@ module.exports = {
 			}
 		});
   }
-  /*
-  , character : function(req, res) {
-  	var c, owner = req.body.owner;
-  	if( owner && owner.trim() !== '' ) {
-  		req.session.owner = owner;
-	 		repo.findCharacter( owner , function(err, result) {
-	 			if(err) throw err;
-	 			else{
-	 				c = result;
-	 			}
-	 			req.session.myCharacter = c;
-				res.render('character', {title: gameTitle +' : My Character'
-				, myCharacter:c});
-	 		});
-	 	}else{
-	  	res.render('index', { title: 'Welcome to ' + gameTitle })
-	 	}
-  }
-  , newChar: function(req, res) {
-  	req.body.owner = req.session.owner;
-		repo.saveCharacter( req.body, function(err, result) {
-			if( err ) throw err;
-			else{
-				req.session.myCharacter = c;
-				res.render('character', {title: gameTitle +' : My Character'
-				, myCharacter:req.body});
-			}
-		});
-  }
-		*/
-
 };
