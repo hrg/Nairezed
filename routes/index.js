@@ -1,4 +1,5 @@
-var repo = require('../repository');
+var socket = require('../socket')
+
 /*
  * GET home page.
  */
@@ -13,26 +14,20 @@ module.exports = {
   	if( req.body.username ) username = req.body.username; // receive post data
   	else username = req.session.username;
   	if( username && username.trim() !== '' ) {
-  		if( req.session.username != username ) req.session.username = username;
-	 		repo.findHero( username , function(err, result) {
+	  	socket.setUsername(username);
+  		if( req.session.username != username ) {
+	  		req.session.username = username;
+	  	}
+	 		socket.hero( function(err, result) {
 	 			if(err) throw err;
 	 			else{
 	 				hero = result;
 	 			}
 	 			req.session.hero = hero;
-		  	res.render('main', {title: gameTitle +' : Main', hero:hero});
+		  	res.render('main', {title: gameTitle +' : Main', hero:hero, username:username});
 	 		});
 	 	}else{
 	  	res.render('index', { title: gameTitle })
 	 	}
-  }
-  , newHero: function(req, res) {
-  	req.body.username = req.session.username;
-		repo.saveHero( req.body, function(err, result) {
-			if( err ) throw err;
-			else{
-				res.render('data', {layout:false, data:JSON.stringify(req.body)});
-			}
-		});
   }
 };

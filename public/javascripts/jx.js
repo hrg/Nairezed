@@ -13,5 +13,8 @@ window.jx = {
 	, on: function(str, event, callback) {
 		jx.id(str).addEventListener(event,callback);
 	}
+	, ready: function(callback) {
+		$(document).ready(callback);
+	}
 }
 

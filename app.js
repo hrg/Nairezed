@@ -4,7 +4,8 @@
  */
 
 var express = require('express')
-  , routes = require('./routes');
+  , routes = require('./routes')
+  , socket = require('./socket');
 
 var app = module.exports = express.createServer();
 
@@ -34,8 +35,9 @@ app.configure('production', function(){
 app.get('/', routes.index);
 app.post('/main', routes.main);
 app.get('/main', routes.main);
-app.post('/newHero', routes.newHero);
 
 app.listen(3000, function(){
-  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+  console.log("* Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
+socket.listen(app);
+

@@ -1,13 +1,33 @@
+script
+	var socket;
+	function updateHero(hero) {
+			jx.id('level').innerHTML = hero.level;
+			jx.id('exp').innerHTML = hero.exp;
+			jx.id('health').innerHTML = hero.health;
+			jx.id('attack').innerHTML = hero.attack;
+			jx.id('defense').innerHTML = hero.defense;
+	}
+	jx.ready(function() {
+		socket = io.connect('/');
+		socket.on('connect', function() {
+			// connected
+		});
+	});
+
 - if (hero)
 	h1 Combat
 	div(id='hero')
-	h2 #{hero.name} (level #{hero.level})
+	h2 #{hero.name} (level 
+		span(id='level') #{hero.level})
 	ul
 		li exp : 
 			span(id='exp') #{hero.exp}
-		li health : #{hero.health}
-		li attack : #{hero.attack}
-		li defense : #{hero.defense}
+		li health : 
+			span(id='health') #{hero.health}
+		li attack : 
+			span(id='attack') #{hero.attack}
+		li defense : 
+			span(id='defense') #{hero.defense}
 	div(id='enemies')
 		div(class='monster')
 			h2 Goblin (level 1)
@@ -17,16 +37,25 @@
 			input(id='attackBtn', type='button', value='Attack')
 	input(id='newBtn', type='button', value='New Monster')
 	script
+		var hero = {
+			level :#{hero.level}
+			, exp : #{hero.exp}
+			, health : #{hero.health}
+			, attack : #{hero.attack}
+			, defense : #{hero.defense}
+		}
 		function onclick_attack(){
 			var health = this.parentNode.childNodes[1].firstChild.firstChild.nextSibling;
 			health.innerHTML = health.innerHTML - 10;
 			if( health.innerHTML <= 0 ) {
 				jx.id('enemies').removeChild(this.parentNode);
-				jx.id('exp').innerHTML = Number(jx.id('exp').innerHTML) + 10;
+				hero.exp += 10;
+				jx.id('exp').innerHTML = hero.exp;
+				socket.emit('update hero', hero);
 			}
 		}
 		jx.on('attackBtn', 'click', onclick_attack);
-		
+	
 		jx.on('newBtn','click', function(){
 			var monster = document.createElement('div');
 			monster.class = 'monster';
@@ -49,20 +78,29 @@
 		input(type='text', id='exp', name='exp', value=0)
 		br
 		label(for='health') health
-		input(type='text', id='health', name='health')
+		input(type='text', id='health', name='health', value=100)
 		br
 		label(for='attack') attack
-		input(type='text', id='attack', name='attack')
+		input(type='text', id='attack', name='attack', value=10)
 		br
 		label(for='defense') defense
-		input(type='text', id='defense', name='defense')
+		input(type='text', id='defense', name='defense', value=10)
 		br
 		input(id='submitBtn', type='button', value='Create')
 	script
 		jx.on('submitBtn','click', function() {
 			var form = jx.id('hero');
-			jx.ajax('/newHero', form, function(data) {
-				//req.session.hero = data;
+			var hero = {
+				username:'#{username}'
+				, name:form.name.value
+				, level:form.level.value
+				, exp:form.exp.value
+				, health:form.health.value
+				, attack:form.attack.value
+				, defense:form.defense.value
+			}
+			socket.emit('new hero', hero);
+			socket.on('hero created', function(data) {
 				location.reload(true);
 			});
 		});
