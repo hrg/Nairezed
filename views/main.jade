@@ -1,72 +1,173 @@
+p to do list
+ul 
+	li farm
+	li prevent abusing
+		ul
+			li levelup bonus
+			li levelup unit in server-side
+	li monster with haste
 script
-	var socket;
-	function updateHero(hero) {
-			jx.id('level').innerHTML = hero.level;
-			jx.id('exp').innerHTML = hero.exp;
-			jx.id('health').innerHTML = hero.health;
-			jx.id('attack').innerHTML = hero.attack;
-			jx.id('defense').innerHTML = hero.defense;
-	}
+	var socket
+		, LEVELUP_UNIT_MAXHEALTH = 10
+		, LEVELUP_UNIT_ATTACK = 1;
 	jx.ready(function() {
 		socket = io.connect('/');
 		socket.on('connect', function() {
 			// connected
+		});
+		socket.on('hero updated', function(updated) {
+			for( var i in updated ) {
+				hero[i] = updated[i];
+			}
+			refreshHero();
+		});
+		socket.on('hero levelup', function(updated) {
+			alert('level up!');
+			hero = updated;
+			refreshHero();
+		});
+		socket.on('monsters', function(monsters) {
+			// pick random one
+			var i = Math.floor(Math.random()*monsters.length);
+			// monster data
+			var m = monsters[i];
+			m.id = 'enemy'+(enemyCount++);
+			m.health = m.maxhealth;
+			// monster element
+			var e = document.createElement('div');
+			e.class = 'goblin';
+			e.id = m.id;
+		
+			e.innerHTML = "<h2><span class='name'>"+m.name+"</span> "
+				+"(level <span class='level'>"+m.level+"</span>)</h2>"
+				+"<ul><li>health : <span class='health'>"+m.health+"</span> / <span class='maxhealth'>"+m.maxhealth+"</span></li>"
+				+"<li>attack : <span class='attack'>"+m.attack+"</span></li>"
+				+"<li>expbonus : <span class='expbonus'>"+m.expbonus+"</span></li>"
+				+ "</ul><input id='attackBtn' type='button' value='Attack' />"
+			
+			jx.id('enemies').appendChild(e);
+			enemies.push(m);
+			e.childNodes[2].addEventListener('click', onclick_attack);
+		});
+		socket.on('hero created', function(data) {
+			location.reload(true);
 		});
 	});
 
 - if (hero)
 	h1 Combat
 	div(id='hero')
-	h2 #{hero.name} (level 
-		span(id='level') #{hero.level})
-	ul
-		li exp : 
-			span(id='exp') #{hero.exp}
-		li health : 
-			span(id='health') #{hero.health}
-		li attack : 
-			span(id='attack') #{hero.attack}
-		li defense : 
-			span(id='defense') #{hero.defense}
+		h2 
+			span(class='name') #{hero.name}
+			|  (level 
+			span(class='level') #{hero.level}
+			| )
+		ul
+			li exp : 
+				span(class='exp') #{hero.exp}
+			li health : 
+				span(class='health') #{hero.health}
+				|  / 
+				span(class='maxhealth') #{hero.maxhealth}
+				if ( hero.bonus > 0 ) 
+					input(id='bonusBtn1', type='button', value='+', onclick='onclick_bonusHealth();')
+			li attack : 
+				span(class='attack') #{hero.attack}
+				if ( hero.bonus > 0 ) 
+					input(id='bonusBtn2', type='button', value='+', onclick='onclick_bonusAttack();')
+			li bonus : 
+				span(class='bonus') #{hero.bonus}
 	div(id='enemies')
-		div(class='monster')
-			h2 Goblin (level 1)
-			ul
-				li health : 
-					span(id='monster_health') 100
-			input(id='attackBtn', type='button', value='Attack')
-	input(id='newBtn', type='button', value='New Monster')
+	input(id='newEnemyBtn', type='button', value='New Enemy')
 	script
 		var hero = {
 			level :#{hero.level}
 			, exp : #{hero.exp}
 			, health : #{hero.health}
+			, maxhealth : #{hero.maxhealth}
 			, attack : #{hero.attack}
-			, defense : #{hero.defense}
+			, bonus : #{hero.bonus}
 		}
-		function onclick_attack(){
-			var health = this.parentNode.childNodes[1].firstChild.firstChild.nextSibling;
-			health.innerHTML = health.innerHTML - 10;
-			if( health.innerHTML <= 0 ) {
-				jx.id('enemies').removeChild(this.parentNode);
-				hero.exp += 10;
-				jx.id('exp').innerHTML = hero.exp;
-				socket.emit('update hero', hero);
+		var target
+			, enemies = []
+			,	enemyCount = 0;
+		function onclick_bonusHealth() {
+			hero.health += LEVELUP_UNIT_MAXHEALTH;
+			hero.maxhealth += LEVELUP_UNIT_MAXHEALTH;
+			spendBonus();
+			updateHero();
+		}
+		function onclick_bonusAttack() {
+			hero.attack += LEVELUP_UNIT_ATTACK;
+			spendBonus();
+			updateHero();
+		}
+		function spendBonus() {
+			if( --hero.bonus <= 0 ) {
+				jx.id('bonusBtn1').style.visibility = 'hidden';
+				jx.id('bonusBtn2').style.visibility = 'hidden';
 			}
 		}
-		jx.on('attackBtn', 'click', onclick_attack);
-	
-		jx.on('newBtn','click', function(){
-			var monster = document.createElement('div');
-			monster.class = 'monster';
-			monster.innerHTML = "<h2>Goblin (level 1)</h2><ul><li>health : <span id='monster_health'>100</span></li></ul>"
-				+ "<input id='attackBtn' type='button' value='Attack' />"
-			jx.id('enemies').appendChild(monster);
-			monster.childNodes[2].addEventListener('click', onclick_attack);
+		function refreshHero() {	
+			if( hero.bonus > 0 ) {
+				jx.id('bonusBtn1').style.visibility = 'visible';
+				jx.id('bonusBtn2').style.visibility = 'visible';
+			}
+			jx.q('#hero .level').innerHTML = hero.level;
+			jx.q('#hero .exp').innerHTML = hero.exp;
+			jx.q('#hero .health').innerHTML = hero.health;
+			jx.q('#hero .maxhealth').innerHTML = hero.maxhealth;
+			jx.q('#hero .attack').innerHTML = hero.attack;		
+			jx.q('#hero .bonus').innerHTML = hero.bonus;
+		}
+		function updateHero() {
+			socket.emit('update hero', hero);
+		}
+		function onclick_attack(){
+			target = getEnemyById(this.parentNode.id);
+			
+			fight(hero, target);
+		}	
+		function getEnemyById(id) {
+			for(var i =0; i<enemies.length; i++) {
+				if(enemies[i].id == id) return enemies[i];
+			}
+		}
+		function removeEmeny(enemy) {
+			var id = enemy.id
+			jx.id(id).parentNode.removeChild(jx.id(id));
+			for(var i =0; i<enemies.length; i++) {
+				if(enemies[i].id == id) {
+					enemies.splice(i,1);
+					return;
+				}
+			}			
+		}
+		function fight(attacker, defender) {			
+			defender.health -= attacker.attack;
+			updateTarget();
+			if( defender.health <= 0 ) {
+				kill(defender);
+				hero.exp += target.expbonus;
+			}else{
+				attacker.health -= defender.attack;
+			}
+			updateHero();
+		}
+		function kill(enemy) {
+			removeEmeny(enemy);
+		}
+		function updateTarget() {
+			if( jx.id(target.id) ) {
+				jx.q('#'+target.id+' .health').innerHTML = target.health;
+			}
+		}
+		jx.on('newEnemyBtn','click', function(){
+			socket.emit('get monsters', hero.level);
 		});
 - else
 	h1 Hero Creation
-	// hero(username, hero.name, attack, defense, health, exp, level)
+	// hero(username, hero.name, attack, health, maxhealth, exp, level)
 	form(id='hero')
 		label(for='name') name
 		input(type='text', id='name', name='name', value='Lea')
@@ -77,14 +178,14 @@ script
 		label(for='exp') exp 
 		input(type='text', id='exp', name='exp', value=0)
 		br
-		label(for='health') health
+		label(for='health') max health
 		input(type='text', id='health', name='health', value=100)
 		br
 		label(for='attack') attack
 		input(type='text', id='attack', name='attack', value=10)
 		br
-		label(for='defense') defense
-		input(type='text', id='defense', name='defense', value=10)
+		label(for='bonus') bonus
+		input(type='text', id='bonus', name='bonus', value=1)
 		br
 		input(id='submitBtn', type='button', value='Create')
 	script
@@ -96,12 +197,10 @@ script
 				, level:form.level.value
 				, exp:form.exp.value
 				, health:form.health.value
+				, maxhealth:form.health.value
 				, attack:form.attack.value
-				, defense:form.defense.value
+				, bonus:form.bonus.value
 			}
 			socket.emit('new hero', hero);
-			socket.on('hero created', function(data) {
-				location.reload(true);
-			});
 		});
 		

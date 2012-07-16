@@ -11,10 +11,17 @@ window.jx = {
 		return document.getElementById(str);
 	}
 	, on: function(str, event, callback) {
-		jx.id(str).addEventListener(event,callback);
+		if( typeof(str) === "string" ) {
+			jx.id(str).addEventListener(event,callback);
+		}else{
+			str.addEventListener(event,callback);
+		}
 	}
 	, ready: function(callback) {
 		$(document).ready(callback);
+	}
+	, q: function(query) {
+		return document.querySelector(query);
 	}
 }
 

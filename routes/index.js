@@ -1,4 +1,5 @@
 var socket = require('../socket')
+var db = require('../db');
 
 /*
  * GET home page.
@@ -14,11 +15,11 @@ module.exports = {
   	if( req.body.username ) username = req.body.username; // receive post data
   	else username = req.session.username;
   	if( username && username.trim() !== '' ) {
-	  	socket.setUsername(username);
+	  	db.setUsername(username);
   		if( req.session.username != username ) {
 	  		req.session.username = username;
 	  	}
-	 		socket.hero( function(err, result) {
+	 		db.hero( function(err, result) {
 	 			if(err) throw err;
 	 			else{
 	 				hero = result;

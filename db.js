@@ -1,16 +1,34 @@
 var Mongolian = require('mongolian')
 	, server = new Mongolian
-	, db = server.db('nairezed');
-
-// hero(username, name, attack, defense, health, exp, level)
+	, db = server.db('nairezed')
+	, heroes = db.collection('heroes')
+	, levelup = db.collection('levelup')
+	, monsters = db.collection('monsters');
+	
 var dbUtil = module.exports = {
-	find: function(table, data, callback) {
-		db.collection(table).findOne(data, callback);
+	setUsername:function(username) {
+		dbUtil.user = {username:username};
 	}
-	, insert: function(table, data, callback) {
-		db.collection(table).insert(data, callback);
+	, newHero:function(hero, callback){
+		heroes.insert(hero, callback);
 	}
-	, update: function(table, query, data, callback) {
-		db.collection(table).update(query, { $set: data}, callback);
+	, updateHero:function(hero, callback) {
+		heroes.update(dbUtil.user, { $set: hero}, callback);
+	}
+	, hero:function(callback) {
+		heroes.findOne(dbUtil.user, callback);
+	}
+	, findLevel:function(exp, callback) {
+		levelup.find({'exp':{$lte:exp}}).sort({exp:-1}).limit(1).forEach(callback);
+	}
+	, getMonsters:function(level, callback) {
+		var result = [];
+		monsters.find({'fromlevel':{$lte:level}, 'tolevel':{$gte:level}}).forEach(function(monster) {
+			result.push(monster);
+		}, function(err) {
+			if( err ) throw err;
+			else callback(result);
+		});
 	}
 };
+

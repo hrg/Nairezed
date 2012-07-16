@@ -17,7 +17,7 @@ module.exports = {
 		var socket = io.on('connection', function(socket) {
 			console.log('* socket connected');
 			socket.on('new hero', function(hero) {
-				module.exports.newHero( hero, function(err, result) {
+				db.newHero( hero, function(err, result) {
 					if( err ) throw err;
 					else{
 						socket.emit('hero created');
@@ -26,28 +26,30 @@ module.exports = {
 				});
 			});
 			socket.on('update hero', function(hero) {
-				module.exports.updateHero( hero, function(err, result) {
-					if( err ) throw err;
-					else{
-						socket.emit('hero updated');
-						console.log('* updated : hero');
+				db.findLevel( hero.exp, function(result) {
+					var levelUp = result.level+1 - hero.level;
+					if( levelUp > 0 ) {
+						hero.bonus += levelUp;
+						hero.level = result.level+1;
+						hero.health = hero.maxhealth;
+						socket.emit('hero levelup', hero);
 					}
-				});				
+					console.log('* received update hero : ' + hero.health);
+					db.updateHero( hero, function(err, result) {
+						if( err ) throw err;
+						else{
+							socket.emit('hero updated', hero);
+							console.log('* updated : hero '+hero.level);
+						}
+					});				
+				});			
 			});
-			
+			socket.on('get monsters', function(level) {
+				db.getMonsters(level, function(monsters) {
+					socket.emit('monsters', monsters);
+				});
+			});
 		});
-	}
-	, setUsername:function(username) {
-		module.exports.user = {username:username};
-	}
-	, newHero:function(hero, callback){
-		db.insert('heroes', hero, callback);
-	}
-	, updateHero:function(hero, callback) {
-		db.update('heroes', module.exports.user, hero, callback);
-	}
-	, hero:function(callback) {
-		db.find('heroes', module.exports.user, callback);
 	}
 }
 
