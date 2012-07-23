@@ -1,8 +1,0 @@
-h1= title
-h2 Welcome to #{title}
-p Please sign in with Facebook Connect.
-form(action='/main', method='POST')
-	label ID
-	input(type='text', name='user', value='rghwang')
-	input(type='image', src='../images/connect.PNG', name='image')#fbconnect
-	
