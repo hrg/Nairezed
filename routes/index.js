@@ -19,13 +19,13 @@ module.exports = {
   		if( req.session.username != username ) {
 	  		req.session.username = username;
 	  	}
-	 		db.hero( function(err, result) {
+	 		db.findHero( function(err, result) {
 	 			if(err) throw err;
 	 			else{
 	 				hero = result;
 	 			}
 	 			req.session.hero = hero;
-		  	res.render('main', {title: gameTitle +' : Main', hero:hero, username:username});
+		  	res.render('main', {title: gameTitle +' : Main', hero:hero, username:username, timeStamp:new Date().getTime()});
 	 		});
 	 	}else{
 	  	res.render('index', { title: gameTitle })
