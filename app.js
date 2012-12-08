@@ -3,6 +3,9 @@
  * Module dependencies.
  */
 
+// initialize express engine and make routes to forward requests from '/' and '/main' to routes.index and routes.main each.
+// listen socket connection using socket.js powered by socket.io.
+
 var express = require('express')
   , routes = require('./routes')
   , socket = require('./socket');

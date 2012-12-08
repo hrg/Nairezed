@@ -1,4 +1,8 @@
-var socket = require('../socket')
+// handle get/post requests from http://domain/ and http://domain/main
+// index : render game title page(facebook login)
+// main : find a hero which a user with username have. In this case, find the hero in DB using db.js powered by mongodb.
+
+//var socket = require('../socket');
 var db = require('../db');
 
 /*
